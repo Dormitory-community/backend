@@ -19,7 +19,7 @@ public class PostCategories extends BaseEntity  {
     @Column(length = 36)
     private String id;
 
-    @Column(name = "category_name", length = 10)
+    @Column(name = "category_name", length = 11)
     @Enumerated(EnumType.STRING)
     private PostCategoryName categoryName;
 }

@@ -19,6 +19,6 @@ public class GroupCategories extends BaseEntity {
     @Column(length = 36)
     private String id;
 
-    @Column(name = "category_name", length = 100)
+    @Column(name = "category_name", length = 11)
     private GroupCategoryName categoryName;
 }
