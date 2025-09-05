@@ -31,6 +31,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'org.postgresql:postgresql'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -39,6 +43,9 @@ dependencies {
     implementation 'io.github.openfeign.querydsl:querydsl-jpa:7.0'
     annotationProcessor 'io.github.openfeign.querydsl:querydsl-apt:7.0:jakarta'
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.12'
+    implementation 'io.swagger.core.v3:swagger-annotations:2.2.36'
 
 }
 
