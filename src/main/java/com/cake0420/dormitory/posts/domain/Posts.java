@@ -25,7 +25,7 @@ public class Posts extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false,
-            foreignKey = @ForeignKey(name = "fk_posts_caterory_id"))
+            foreignKey = @ForeignKey(name = "fk_posts_category_id"))
     private PostCategories category;
 
     @Column(length = 50, nullable = false)
