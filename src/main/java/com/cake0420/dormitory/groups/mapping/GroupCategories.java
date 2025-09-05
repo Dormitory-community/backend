@@ -20,5 +20,6 @@ public class GroupCategories extends BaseEntity {
     private String id;
 
     @Column(name = "category_name", length = 11)
+    @Enumerated(EnumType.STRING)
     private GroupCategoryName categoryName;
 }
