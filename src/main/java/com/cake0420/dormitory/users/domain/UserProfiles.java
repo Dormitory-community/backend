@@ -29,8 +29,8 @@ public class UserProfiles extends BaseEntity {
     private String name;
 
     @Column(name = "supabase_id", length = 36, nullable = false)
-    private String supabase_id;
+    private String supabaseId;
 
     @Column(name = "user_profile_url", length = 255, nullable = false)
-    private String UserProfileUrl;
+    private String userProfileUrl;
 }
