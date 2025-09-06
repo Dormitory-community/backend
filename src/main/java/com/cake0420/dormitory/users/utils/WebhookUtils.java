@@ -11,7 +11,7 @@ public class WebhookUtils {
     private static final String HMAC_SHA256 = "HmacSHA256";
 
 
-    public static boolean verifySignature(String payload, String signatureHeader, String secretWithPrefix) {
+    public static boolean verifySignature(String signatureHeader, String payload, String secretWithPrefix) {
         try {
             if (signatureHeader == null || !signatureHeader.startsWith("v1=")) {
                 return false;
