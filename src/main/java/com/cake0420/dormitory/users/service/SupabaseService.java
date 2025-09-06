@@ -4,4 +4,6 @@ import reactor.core.publisher.Mono;
 
 public interface SupabaseService {
     Mono<Boolean> validateToken(String token);
+
+    boolean validateServiceKey(String authHeader);
 }

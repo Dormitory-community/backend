@@ -1,26 +1,26 @@
 package com.cake0420.dormitory.users.controller;
 
+import com.cake0420.dormitory.global.config.SupabaseProperties;
+import com.cake0420.dormitory.users.service.SupabaseService;
 import com.cake0420.dormitory.users.service.UserProfileService;
 import com.cake0420.dormitory.users.utils.WebhookUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "유저 프로필 API")
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/auth")
+@RequiredArgsConstructor
 public class UserProfileController {
+    private final SupabaseService supabaseService;
     private final UserProfileService userProfileService;
-    private final String supabaseWebhookSecret;
-
-    public UserProfileController(UserProfileService userProfileService,
-                                 @Value("${supabase.webhook.secret}") String supabaseWebhookSecret) {
-        this.userProfileService = userProfileService;
-        this.supabaseWebhookSecret = supabaseWebhookSecret;
-    }
+    private final SupabaseProperties supabaseProperties;
 
 
     @PostMapping("/user-profile")
@@ -30,10 +30,15 @@ public class UserProfileController {
                         """
     )
     public ResponseEntity<String> registerUserProfile(@RequestHeader(name = "x-supabase-signature", required = false) String signatureHeader,
+                                                      @RequestHeader(name = "Authorization", required = false) String authorizationHeader,
                                                       @RequestBody String payload) {
-        boolean isValid = WebhookUtils.verifySignature(signatureHeader, payload, supabaseWebhookSecret);
+        if (!supabaseService.validateServiceKey(authorizationHeader)) {
+            log.warn("유효하지 않은 토큰");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
+        }
 
-        if (!isValid) {
+        if (!WebhookUtils.verifySignature(signatureHeader, payload, supabaseProperties.getWebhookSecret())) {
+            log.warn("유효하지 않은 시그니처");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 시그니처입니다.");
         }
 

@@ -20,6 +20,6 @@ spring:
 supabase:
   url: ${SUPABASE_URL}
   key: ${SUPABASE_KEY}
-  webhook:
-    secret: ${WEBHOOK_SECRET}
+  service-key: ${SERVICE_KEY}
+  webhook-secret: ${WEBHOOK_SECRET}
 
