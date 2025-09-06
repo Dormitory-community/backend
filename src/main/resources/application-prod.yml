@@ -12,3 +12,14 @@ spring:
       max-lifetime: 1800000
       connection-timeout: 30000
       pool-name: HikariPool
+  security:
+    cors:
+      allowed-origins: ${ALLOWED_ORIGIN}
+
+
+supabase:
+  url: ${SUPABASE_URL}
+  key: ${SUPABASE_KEY}
+  webhook:
+    secret: ${WEBHOOK_SECRET}
+
