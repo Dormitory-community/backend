@@ -29,7 +29,7 @@ public class SupabaseServiceImpl implements SupabaseService {
     @Override
     public boolean validateServiceKey(String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) return false;
-        String token = authHeader.substring(7);
+        String token = authHeader.substring("Bearer ".length());
         return token.equals(webClientConfig.getServiceKey());
     }
 
