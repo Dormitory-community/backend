@@ -4,7 +4,6 @@ import com.cake0420.dormitory.users.service.UserProfileService;
 import com.cake0420.dormitory.users.utils.WebhookUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,12 +12,16 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "유저 프로필 API")
 @RestController
 @RequestMapping("/api/v1/auth")
-@RequiredArgsConstructor
 public class UserProfileController {
     private final UserProfileService userProfileService;
+    private final String supabaseWebhookSecret;
 
-    @Value("${supabase.webhook.secret}")
-    private String SUPABASE_WEBHOOK_SECRET;
+    public UserProfileController(UserProfileService userProfileService,
+                                 @Value("${supabase.webhook.secret}") String supabaseWebhookSecret) {
+        this.userProfileService = userProfileService;
+        this.supabaseWebhookSecret = supabaseWebhookSecret;
+    }
+
 
     @PostMapping("/user-profile")
     @Operation(summary = "유저 정보 저장",
@@ -28,7 +31,7 @@ public class UserProfileController {
     )
     public ResponseEntity<String> registerUserProfile(@RequestHeader(name = "x-supabase-signature", required = false) String signatureHeader,
                                                       @RequestBody String payload) {
-        boolean isValid = WebhookUtils.verifySignature(signatureHeader, payload, SUPABASE_WEBHOOK_SECRET);
+        boolean isValid = WebhookUtils.verifySignature(signatureHeader, payload, supabaseWebhookSecret);
 
         if (!isValid) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 시그니처입니다.");
