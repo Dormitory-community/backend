@@ -4,13 +4,21 @@ import com.cake0420.dormitory.global.config.SupabaseProperties;
 import com.cake0420.dormitory.users.service.SupabaseService;
 import com.cake0420.dormitory.users.service.UserProfileService;
 import com.cake0420.dormitory.users.utils.WebhookUtils;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.io.IOException;
 
 @Tag(name = "유저 프로필 API")
 @Slf4j
@@ -21,6 +29,7 @@ public class UserProfileController {
     private final SupabaseService supabaseService;
     private final UserProfileService userProfileService;
     private final SupabaseProperties supabaseProperties;
+    private final ObjectMapper objectMapper;
 
 
     @PostMapping("/user-profile")
@@ -30,14 +39,16 @@ public class UserProfileController {
                         """
     )
     public ResponseEntity<String> registerUserProfile(@RequestHeader(name = "x-supabase-signature", required = false) String signatureHeader,
-                                                      @RequestBody String payload) {
-        if (!WebhookUtils.verifySignature(signatureHeader, payload, supabaseProperties.getWebhookSecret())) {
+                                                      HttpServletRequest request) throws IOException {
+        byte[] payloadBytes = request.getInputStream().readAllBytes(); // 원본 바이트
+        if (!WebhookUtils.verifySignature(signatureHeader, payloadBytes, supabaseProperties.getWebhookSecret())) {
             log.warn("유효하지 않은 시그니처");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 시그니처입니다.");
         }
 
         try {
-            userProfileService.registerUserProfile(payload);
+            JsonNode json = objectMapper.readTree(payloadBytes);
+            userProfileService.registerUserProfile(json);
             return ResponseEntity.ok().body("유저 정보가 등록되었습니다.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 내부 오류 발생");
