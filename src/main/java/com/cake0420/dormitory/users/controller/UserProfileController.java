@@ -37,8 +37,6 @@ public class UserProfileController {
         try {
             userProfileService.registerUserProfile(payload);
             return ResponseEntity.ok().body("유저 정보가 등록되었습니다.");
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("이미 등록된 유저입니다.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 내부 오류 발생");
         }
