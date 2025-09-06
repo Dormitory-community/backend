@@ -31,7 +31,7 @@ public class SecurityConfig {
                                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                             )
                     .authorizeHttpRequests(authorize ->
-                                authorize.requestMatchers("/**").permitAll())
+                                authorize.requestMatchers("/api/v1/auth/user-profile").permitAll())
                     .httpBasic(AbstractHttpConfigurer::disable)
                     .formLogin(AbstractHttpConfigurer::disable);
             return http.build();
