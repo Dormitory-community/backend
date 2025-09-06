@@ -33,7 +33,8 @@ public class UserProfileController {
     )
     public ResponseEntity<String> registerUserProfile(@RequestHeader(name = "x-supabase-signature", required = false) String signatureHeader,
                                                       @RequestBody String payload) {
-
+        log.info(payload);
+        log.info(signatureHeader);
         if (!WebhookUtils.verifySignature(signatureHeader, payload, supabaseProperties.getWebhookSecret())) {
             log.warn("유효하지 않은 시그니처");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 시그니처입니다.");
