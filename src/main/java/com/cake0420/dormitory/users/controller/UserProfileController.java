@@ -4,6 +4,7 @@ import com.cake0420.dormitory.global.config.SupabaseProperties;
 import com.cake0420.dormitory.users.service.SupabaseService;
 import com.cake0420.dormitory.users.service.UserProfileService;
 import com.cake0420.dormitory.users.utils.WebhookUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class UserProfileController {
     private final SupabaseService supabaseService;
     private final UserProfileService userProfileService;
     private final SupabaseProperties supabaseProperties;
+    private final ObjectMapper objectMapper;
 
 
     @PostMapping("/user-profile")
@@ -31,6 +33,7 @@ public class UserProfileController {
     )
     public ResponseEntity<String> registerUserProfile(@RequestHeader(name = "x-supabase-signature", required = false) String signatureHeader,
                                                       @RequestBody String payload) {
+
         if (!WebhookUtils.verifySignature(signatureHeader, payload, supabaseProperties.getWebhookSecret())) {
             log.warn("유효하지 않은 시그니처");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 시그니처입니다.");

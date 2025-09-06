@@ -22,6 +22,7 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     @Override
     public void registerUserProfile(String payload) {
+
         try {
             JsonNode json = objectMapper.readTree(payload);
             SupabaseUserDTO dto = validatePayload(json);
@@ -49,16 +50,16 @@ public class UserProfileServiceImpl implements UserProfileService {
     }
 
     private SupabaseUserDTO validatePayload(JsonNode json) {
-        String event = json.get("event").asText();
-        if (!"INSERT".equals(event)) {
-            return null;
-        }
+        JsonNode userNode = json.get("user");
+        if (userNode == null) return null;
+        JsonNode metadata = json.get("metadata"); // 최상위에서 가져오기
+        if (metadata == null) return null;
 
-        JsonNode record = json.get("record");
-        if (record == null) return null;
+        String supabaseId = userNode.get("id").asText();
+        String name = metadata.has("name") && !metadata.get("name").asText().isEmpty()
+                ? metadata.get("name").asText()
+                : userNode.get("email").asText();
 
-        String supabaseId = record.get("id").asText();
-        String name = record.has("name") ? record.get("name").asText() : record.get("email").asText();
 
         return new SupabaseUserDTO(supabaseId, name);
     }

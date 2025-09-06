@@ -4,35 +4,55 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Base64;
 
 @Slf4j
 public class WebhookUtils {
     private static final String HMAC_SHA256 = "HmacSHA256";
 
-
-    public static boolean verifySignature(String signatureHeader, String payload, String secretWithPrefix) {
+    public static boolean verifySignature(String signatureHeader, String payload, String base64SecretKey) {
         try {
-            if (signatureHeader == null || !signatureHeader.startsWith("v1=")) {
-                return false;
-            }
-            String signatureFromHeader = signatureHeader.substring(3);
-            // whsec_ 제거 후 Base64 디코딩
-            String base64Secret = secretWithPrefix.replace("whsec_", "");
-            byte[] secretKeyBytes = Base64.getDecoder().decode(base64Secret);
+            byte[] payloadBytes = payload.getBytes(StandardCharsets.UTF_8);
+            if (signatureHeader == null || signatureHeader.isBlank()) return false;
+            String sigPart = signatureHeader.startsWith("v1,") || signatureHeader.startsWith("v1=")
+                    ? signatureHeader.substring(3) : signatureHeader;
 
-            // HMAC-SHA256 계산
+            byte[] key = decodeBase64Lenient(base64SecretKey);
+
+            // compute HMAC
             Mac hmac = Mac.getInstance(HMAC_SHA256);
-            SecretKeySpec keySpec = new SecretKeySpec(secretKeyBytes, HMAC_SHA256);
-            hmac.init(keySpec);
+            hmac.init(new SecretKeySpec(key, HMAC_SHA256));
+            byte[] computed = hmac.doFinal(payloadBytes);
 
-            byte[] hash = hmac.doFinal(payload.getBytes());
-            String computedSignature = Base64.getEncoder().encodeToString(hash);
-
-            return computedSignature.equals(signatureFromHeader);
+            // signaturePart may be base64 or hex; try base64 first then hex fallback
+            byte[] sigBytes;
+            try {
+                sigBytes = decodeBase64Lenient(sigPart);
+            } catch (IllegalArgumentException ex) {
+                sigBytes = hexToBytes(sigPart);
+            }
+            return MessageDigest.isEqual(sigBytes, computed);
         } catch (Exception e) {
-            log.error("verifySignature error : {}", e.getMessage());
+            // production: do not log secrets/payloads
             return false;
         }
+    }
+
+    private static byte[] decodeBase64Lenient(String s) {
+        String norm = s.replace('-', '+').replace('_', '/');
+        int pad = (4 - (norm.length() % 4)) % 4;
+        if (pad > 0) norm += "=".repeat(pad);
+        return Base64.getDecoder().decode(norm);
+    }
+
+    private static byte[] hexToBytes(String s) {
+        if (s.length() % 2 != 0) throw new IllegalArgumentException("Invalid hex length");
+        byte[] out = new byte[s.length()/2];
+        for (int i=0;i<s.length();i+=2) {
+            out[i/2] = (byte) Integer.parseInt(s.substring(i,i+2), 16);
+        }
+        return out;
     }
 }
