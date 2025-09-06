@@ -3,12 +3,10 @@ package com.cake0420.dormitory.users.domain;
 import com.cake0420.dormitory.baseEntity.BaseEntity;
 import com.cake0420.dormitory.users.domain.enums.Role;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
+@Builder
 @Getter
 @Table(name = "user_profiles",
         uniqueConstraints = @UniqueConstraint(name = "uk_user_profile_supabase_id", columnNames = "supabase_id")
