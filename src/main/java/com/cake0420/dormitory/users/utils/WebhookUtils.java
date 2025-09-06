@@ -16,10 +16,9 @@ public class WebhookUtils {
         try {
             byte[] payloadBytes = payload.getBytes(StandardCharsets.UTF_8);
             if (signatureHeader == null || signatureHeader.isBlank()) return false;
-            String sigPart = signatureHeader.startsWith("v1,") || signatureHeader.startsWith("v1=")
-                    ? signatureHeader.substring(3) : signatureHeader;
+            String sigPart = signatureHeader.startsWith("v1,") ? signatureHeader.substring(4) : signatureHeader;
+            byte[] key = base64SecretKey.getBytes(StandardCharsets.UTF_8); // raw bytes
 
-            byte[] key = decodeBase64Lenient(base64SecretKey);
 
             // compute HMAC
             Mac hmac = Mac.getInstance(HMAC_SHA256);
