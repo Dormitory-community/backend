@@ -1,6 +1,5 @@
 package com.cake0420.dormitory.users.service.impl;
 
-import com.cake0420.dormitory.users.domain.dto.SupabaseUserDTO;
 import com.cake0420.dormitory.users.service.SupabaseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,18 +25,4 @@ public class SupabaseServiceImpl implements SupabaseService {
                 .onErrorReturn(false);
     }
 
-    @Override
-    public SupabaseUserDTO getUserFromToken(String token) {
-        try {
-            return supabaseWebClient.get()
-                    .uri("/user")
-                    .header("Authorization", "Bearer " + token)
-                    .retrieve()
-                    .bodyToMono(SupabaseUserDTO.class)
-                    .block();
-        } catch (Exception e) {
-            log.error("getUserFromToken error : {}", e.getMessage());
-            return null;
-        }
-    }
 }
