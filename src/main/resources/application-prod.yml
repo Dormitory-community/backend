@@ -21,6 +21,5 @@ supabase:
   url: ${SUPABASE_URL}
   key: ${SUPABASE_KEY}
   service-key: ${SERVICE_KEY}
-  webhook:
-    secret: ${WEBHOOK_SECRET}
+  webhook-secret: ${WEBHOOK_SECRET}
 

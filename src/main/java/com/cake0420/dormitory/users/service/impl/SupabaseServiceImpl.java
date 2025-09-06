@@ -1,6 +1,6 @@
 package com.cake0420.dormitory.users.service.impl;
 
-import com.cake0420.dormitory.global.config.WebClientConfig;
+import com.cake0420.dormitory.global.config.SupabaseProperties;
 import com.cake0420.dormitory.users.service.SupabaseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class SupabaseServiceImpl implements SupabaseService {
     private final WebClient supabaseWebClient;
-    private final WebClientConfig webClientConfig;
+    private final SupabaseProperties supabaseProperties;
 
     @Override
     public Mono<Boolean> validateToken(String token) {
@@ -30,7 +30,7 @@ public class SupabaseServiceImpl implements SupabaseService {
     public boolean validateServiceKey(String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) return false;
         String token = authHeader.substring("Bearer ".length());
-        return token.equals(webClientConfig.getServiceKey());
+        return token.equals(supabaseProperties.getServiceKey());
     }
 
 
