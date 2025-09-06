@@ -36,7 +36,9 @@ public class SecurityConfig {
                                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                             )
                     .authorizeHttpRequests(authorize ->
-                                authorize.requestMatchers(HttpMethod.POST,"/api/v1/auth/user-profile").permitAll())
+                                authorize.requestMatchers(HttpMethod.POST,"/api/v1/auth/user-profile").permitAll()
+                                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                    .anyRequest().authenticated())
                     .httpBasic(AbstractHttpConfigurer::disable)
                     .formLogin(AbstractHttpConfigurer::disable);
         return http.build();
