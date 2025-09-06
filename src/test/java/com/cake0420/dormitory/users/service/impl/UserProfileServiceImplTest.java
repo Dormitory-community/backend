@@ -2,8 +2,6 @@ package com.cake0420.dormitory.users.service.impl;
 
 import com.cake0420.dormitory.users.domain.UserProfiles;
 import com.cake0420.dormitory.users.repository.UserProfileRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -11,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -61,15 +60,12 @@ class UserProfileServiceImplTest {
 
     @Test
     @DisplayName("인증 정보 저장 테스트")
-    void registerUserProfile() throws JsonProcessingException {
+    void registerUserProfile() {
 
 
-
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode jsonNode = mapper.readTree(payload);
 
         UserProfileServiceImpl service = new UserProfileServiceImpl(objectMapper, userProfileRepository);
-        service.registerUserProfile(jsonNode);
+        service.registerUserProfile(payload); // 수정
         UserProfiles saved = userProfileRepository.findBySupabaseId(id).orElse(null);
         assertThat(saved).isNotNull();
         assertThat(saved.getSupabaseId()).isEqualTo(id);
@@ -78,7 +74,7 @@ class UserProfileServiceImplTest {
 
     @Test
     @DisplayName("유효하지 않은 payload 테스트")
-    void registerUserProfile_invalidPayload() throws JsonProcessingException {
+    void registerUserProfile_invalidPayload() throws IOException {
         payload = """
             {
               "meta": {
@@ -105,12 +101,8 @@ class UserProfileServiceImplTest {
               }
             }
         """.formatted(UUID.randomUUID(), OffsetDateTime.now(), name, id);
-
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode jsonNode = mapper.readTree(payload);
-
         UserProfileServiceImpl service = new UserProfileServiceImpl(objectMapper, userProfileRepository);
-        service.registerUserProfile(jsonNode);
+        service.registerUserProfile(payload); // 수정
         UserProfiles saved = userProfileRepository.findBySupabaseId(id).orElse(null);
         assertThat(saved).isNull();
 

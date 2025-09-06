@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Base64;
 
@@ -11,8 +12,9 @@ import java.util.Base64;
 public class WebhookUtils {
     private static final String HMAC_SHA256 = "HmacSHA256";
 
-    public static boolean verifySignature(String signatureHeader, byte[] payloadBytes, String base64SecretKey) {
+    public static boolean verifySignature(String signatureHeader, String payload, String base64SecretKey) {
         try {
+            byte[] payloadBytes = payload.getBytes(StandardCharsets.UTF_8);
             if (signatureHeader == null || signatureHeader.isBlank()) return false;
             String sigPart = signatureHeader.startsWith("v1,") || signatureHeader.startsWith("v1=")
                     ? signatureHeader.substring(3) : signatureHeader;

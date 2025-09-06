@@ -21,9 +21,10 @@ public class UserProfileServiceImpl implements UserProfileService {
 
 
     @Override
-    public void registerUserProfile(JsonNode payload) {
+    public void registerUserProfile(String payload) {
+
         try {
-            JsonNode json = objectMapper.readTree(payload.traverse());
+            JsonNode json = objectMapper.readTree(payload);
             SupabaseUserDTO dto = validatePayload(json);
             if (dto == null) return;
 
