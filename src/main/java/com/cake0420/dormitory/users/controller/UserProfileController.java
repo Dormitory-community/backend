@@ -33,15 +33,12 @@ public class UserProfileController {
     public ResponseEntity<String> registerUserProfile(@RequestHeader(name = "x-supabase-signature", required = false) String signatureHeader,
                                                       @RequestHeader(name = "Authorization", required = false) String authorizationHeader,
                                                       @RequestBody String payload) {
-        boolean validAuth = supabaseService.validateServiceKey(authorizationHeader);
-        boolean isValid = WebhookUtils.verifySignature(signatureHeader, payload, webClientConfig.getSupabaseWebhookSecret());
-
-        if (!validAuth) {
+        if (!supabaseService.validateServiceKey(authorizationHeader)) {
             log.warn("유효하지 않은 토큰");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다.");
-
         }
-        if (!isValid) {
+
+        if (!WebhookUtils.verifySignature(signatureHeader, payload, webClientConfig.getSupabaseWebhookSecret())) {
             log.warn("유효하지 않은 시그니처");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 시그니처입니다.");
         }
