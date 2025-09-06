@@ -32,30 +32,32 @@ class UserProfileServiceImplTest {
         name = "테스트";
         payload = """
             {
-              "metadata": {
-                "uuid": "%s",
-                "time": "%s",
-                "name": "%s",
-                "ip_address": "127.0.0.1"
-              },
-              "user": {
-                "id": "%s",
-                "aud": "authenticated",
-                "role": "",
-                "email": "valid.email@supabase.com",
-                "phone": "",
-                "app_metadata": {
-                  "provider": "email",
-                  "providers": ["email"]
-                },
-                "user_metadata": {},
-                "identities": [],
-                "created_at": "0001-01-01T00:00:00Z",
-                "updated_at": "0001-01-01T00:00:00Z",
-                "is_anonymous": false
-              }
-            }
-        """.formatted(UUID.randomUUID(), OffsetDateTime.now(), name, id);
+               "metadata": {
+                 "uuid": "%s",
+                 "time": "%s",
+                 "name": "before-user-created",
+                 "ip_address": "127.0.0.1"
+               },
+               "user": {
+                 "id": "%s",
+                 "aud": "authenticated",
+                 "role": "",
+                 "email": "nick6767676767@gmail.com",
+                 "phone": "",
+                 "app_metadata": {
+                   "provider": "email",
+                   "providers": ["email"]
+                 },
+                 "user_metadata": {
+                   "full_name": "%s"
+                 },
+                 "identities": [],
+                 "created_at": "0001-01-01T00:00:00Z",
+                 "updated_at": "0001-01-01T00:00:00Z",
+                 "is_anonymous": false
+               }
+             }
+        """.formatted(UUID.randomUUID(), OffsetDateTime.now(), id, name);
     }
 
     @Test
@@ -77,32 +79,32 @@ class UserProfileServiceImplTest {
     void registerUserProfile_invalidPayload() throws IOException {
         payload = """
             {
-              "meta": {
-                "uuid": "%s",
-                "time": "%s",
-                "name": "%s",
-                "ip_address": "127.0.0.1"
-              },
-              "user": {
-                "id": "%s",
-                "aud": "authenticated",
-                "role": "",
-                "email": "valid.email@supabase.com",
-                "phone": "",
-                "app_metadata": {
-                  "provider": "email",
-                  "providers": ["email"]
-                },
-                "user_metadata": {},
-                "identities": [],
-                "created_at": "0001-01-01T00:00:00Z",
-                "updated_at": "0001-01-01T00:00:00Z",
-                "is_anonymous": false
-              }
-            }
-        """.formatted(UUID.randomUUID(), OffsetDateTime.now(), name, id);
+               "metadata": {
+                 "uuid": "%s",
+                 "time": "%s",
+                 "name": "before-user-created",
+                 "ip_address": "127.0.0.1""
+               },
+               "user": {
+                 "id": "%s",
+                 "aud": "authenticated",
+                 "role": "",
+                 "email": "nick6767676767@gmail.com",
+                 "phone": "",
+                 "app_metadata": {
+                   "provider": "email",
+                   "providers": ["email"]
+                 },
+
+                 "identities": [],
+                 "created_at": "0001-01-01T00:00:00Z",
+                 "updated_at": "0001-01-01T00:00:00Z",
+                 "is_anonymous": false
+               }
+             }
+        """.formatted(UUID.randomUUID(), OffsetDateTime.now(), id);
         UserProfileServiceImpl service = new UserProfileServiceImpl(objectMapper, userProfileRepository);
-        service.registerUserProfile(payload); // 수정
+        service.registerUserProfile(payload);
         UserProfiles saved = userProfileRepository.findBySupabaseId(id).orElse(null);
         assertThat(saved).isNull();
 

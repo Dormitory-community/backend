@@ -52,13 +52,14 @@ public class UserProfileServiceImpl implements UserProfileService {
     private SupabaseUserDTO validatePayload(JsonNode json) {
         JsonNode userNode = json.get("user");
         if (userNode == null) return null;
-        JsonNode metadata = json.get("metadata"); // 최상위에서 가져오기
-        if (metadata == null) return null;
+        if (!userNode.has("user_metadata") || !userNode.get("user_metadata").hasNonNull("full_name")) {
+            return null;
+        }
+
 
         String supabaseId = userNode.get("id").asText();
-        String name = metadata.has("name") && !metadata.get("name").asText().isEmpty()
-                ? metadata.get("name").asText()
-                : userNode.get("email").asText();
+        String name = userNode.get("user_metadata").get("full_name").asText();
+        if (supabaseId == null || supabaseId.isBlank() || name == null || name.isBlank()) return null;
 
 
         return new SupabaseUserDTO(supabaseId, name);
