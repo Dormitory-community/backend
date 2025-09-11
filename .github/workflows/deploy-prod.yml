@@ -27,8 +27,9 @@ jobs:
       - name: Build Docker image
         run: |
           IMAGE_TAG=$(if [ "${GITHUB_REF_NAME}" = "main" ]; then echo "prod"; else echo "dev"; fi)
-          docker build -t ghcr.io/${{ github.repository }}/my-app:${IMAGE_TAG} .
-          docker push ghcr.io/${{ github.repository }}/my-app:${IMAGE_TAG}
+          REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          docker build -t ghcr.io/${REPO_NAME}/my-app:${IMAGE_TAG} .
+          docker push ghcr.io/${REPO_NAME}/my-app:${IMAGE_TAG}
 
       # 4. Jenkins 웹훅 호출
       - name: Trigger Jenkins deploy
