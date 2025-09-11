@@ -1,0 +1,39 @@
+name: Build and Deploy Docker
+
+on:
+  push:
+    branches:
+      - main  # main 브랜치에 push 될 때만 실행
+      - dev   # dev 브랜치도 포함 가능
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 코드 체크아웃
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Docker 로그인 (GHCR)
+      - name: Login to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      # 3. Docker 이미지 빌드
+      - name: Build Docker image
+        run: |
+          IMAGE_TAG=$(if [ "${GITHUB_REF_NAME}" = "main" ]; then echo "prod"; else echo "dev"; fi)
+          docker build -t ghcr.io/${{ github.repository }}/my-app:${IMAGE_TAG} .
+          docker push ghcr.io/${{ github.repository }}/my-app:${IMAGE_TAG}
+
+      # 4. Jenkins 웹훅 호출
+      - name: Trigger Jenkins deploy
+        run: |
+          IMAGE_TAG=$(if [ "${GITHUB_REF_NAME}" = "main" ]; then echo "prod"; else echo "dev"; fi)
+          curl -X POST \
+            "${{ secrets.JENKINS_WEBHOOK_URL }}?DEPLOY_ENV=${IMAGE_TAG}" \
+            --fail
