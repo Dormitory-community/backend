@@ -31,10 +31,3 @@ jobs:
           docker build -t ghcr.io/${REPO_NAME}/my-app:${IMAGE_TAG} .
           docker push ghcr.io/${REPO_NAME}/my-app:${IMAGE_TAG}
 
-      # 4. Jenkins 웹훅 호출
-      - name: Trigger Jenkins deploy
-        run: |
-          IMAGE_TAG=$(if [ "${GITHUB_REF_NAME}" = "main" ]; then echo "prod"; else echo "dev"; fi)
-          curl -X POST \
-            "${{ secrets.JENKINS_WEBHOOK_URL }}?DEPLOY_ENV=${IMAGE_TAG}" \
-            --fail
