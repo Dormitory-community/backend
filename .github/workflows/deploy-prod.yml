@@ -31,3 +31,9 @@ jobs:
           docker build -t ghcr.io/${REPO_NAME}/my-app:${IMAGE_TAG} .
           docker push ghcr.io/${REPO_NAME}/my-app:${IMAGE_TAG}
 
+      # 4. Trigger Jenkins Deploy
+      - name: Trigger Jenkins Deploy
+        run: |
+          curl -X POST \
+            "https://jenkins.livinglogos.kr/job/production/buildWithParameters?token=${{ secrets.JENKINS_TOKEN }}&DEPLOY_ENV=$(if [ "${GITHUB_REF_NAME}" = "main" ]; then echo "prod"; else echo "dev"; fi)" \
+            --user ${{ secrets.JENKINS_USERNAME }}:${{ secrets.API_TOKEN }}
