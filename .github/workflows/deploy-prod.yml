@@ -36,5 +36,6 @@ jobs:
         run: |
           curl -X POST \
                -A "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36" \
+               -H "X-GitHub-Secret: ${{ secrets.CLOUDFLARE_HEADER}}" \
             "https://${{ secrets.JENKINS_SERVER }}/job/production/buildWithParameters?token=${{ secrets.JENKINS_TOKEN }}&DEPLOY_ENV=$(if [ "${GITHUB_REF_NAME}" = "main" ]; then echo "prod"; else echo "dev"; fi)" \
             --user ${{ secrets.JENKINS_USERNAME }}:${{ secrets.API_TOKEN }}
