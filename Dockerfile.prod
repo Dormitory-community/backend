@@ -1,0 +1,38 @@
+# Production Dockerfile (ARM 최적화)
+# 빌드 스테이지
+FROM --platform=linux/arm64 gradle:8.5-jdk17 AS build
+WORKDIR /app
+
+# Gradle 캐시 최적화
+COPY gradle/ gradle/
+COPY gradlew gradlew.bat build.gradle settings.gradle ./
+RUN gradle dependencies --no-daemon
+
+# 소스 코드 복사 및 빌드 (프로덕션용)
+COPY src/ src/
+RUN gradle build --no-daemon -x test --build-cache
+
+# 실행 스테이지 (Alpine ARM64)
+FROM --platform=linux/arm64 eclipse-temurin:17-jre-alpine
+WORKDIR /app
+
+# Alpine에서 타임존 설정
+RUN apk add --no-cache tzdata
+ENV TZ=Asia/Seoul
+
+# 프로덕션 환경 변수
+ENV SPRING_PROFILES_ACTIVE=prod
+ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
+
+# 애플리케이션 실행을 위한 사용자 추가
+RUN addgroup -S spring && adduser -S spring -G spring
+USER spring:spring
+
+# 빌드 스테이지에서 생성된 JAR 파일 복사
+COPY --from=build --chown=spring:spring /app/build/libs/*.jar app.jar
+
+# 컨테이너 포트 노출
+EXPOSE 8080
+
+# JVM 최적화 옵션과 함께 실행
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
