@@ -34,16 +34,9 @@ RUN --mount=type=cache,target=/cache/.gradle \
 FROM eclipse-temurin:17-jre AS runtime
 WORKDIR /app
 
-# 타임존 설정 (Debian 기반)
-RUN apt-get update && \
-    apt-get install -y tzdata && \
-    rm -rf /var/lib/apt/lists/*
-
-ENV TZ=Asia/Seoul
-
 # 애플리케이션 사용자 생성
-RUN groupadd -g 1000 appgroup && \
-    useradd -u 1000 -g appgroup -m -s /bin/sh appuser
+RUN groupadd -g 2000 appgroup && \
+    useradd -u 2000 -g appgroup -m -s /bin/sh appuser
 
 # 빌드 결과 복사
 COPY --from=build --chown=appuser:appgroup /app/build/libs/*.jar app.jar
