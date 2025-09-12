@@ -37,14 +37,14 @@ jobs:
           REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           IMAGE_TAG=${{ github.ref_name == 'main' && 'prod' || 'dev' }}
           docker buildx build \
+            -f Dockerfile.prod \
             --platform linux/arm64 \
             -t ghcr.io/${REPO_NAME}/my-app:${IMAGE_TAG} \
             -t ghcr.io/${REPO_NAME}/my-app:${{ github.sha }} \
             --push \
-            .
+            .  
 
-
-      # 8. Trigger Jenkins Deploy
+  # 8. Trigger Jenkins Deploy
       - name: Trigger Jenkins Deploy
         run: |
           DEPLOY_ENV=${{ github.ref_name == 'main' && 'prod' || 'dev' }}
