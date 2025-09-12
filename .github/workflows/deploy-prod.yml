@@ -35,5 +35,5 @@ jobs:
       - name: Trigger Jenkins Deploy
         run: |
           curl -X POST \
-            "https://jenkins.livinglogos.kr/job/production/buildWithParameters?token=${{ secrets.JENKINS_TOKEN }}&DEPLOY_ENV=$(if [ "${GITHUB_REF_NAME}" = "main" ]; then echo "prod"; else echo "dev"; fi)" \
+            "http://${{ secrets.JENKINS_SERVER }}/job/production/buildWithParameters?token=${{ secrets.JENKINS_TOKEN }}&DEPLOY_ENV=$(if [ "${GITHUB_REF_NAME}" = "main" ]; then echo "prod"; else echo "dev"; fi)" \
             --user ${{ secrets.JENKINS_USERNAME }}:${{ secrets.API_TOKEN }}
