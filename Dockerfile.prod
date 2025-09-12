@@ -1,47 +1,11 @@
-# =========================
-# 빌드 스테이지
-# =========================
-FROM gradle:8.5-jdk17 AS build
+FROM azul/zulu-openjdk:17-jre
 WORKDIR /app
 
-# Gradle 캐시 디렉토리 설정
-ENV GRADLE_USER_HOME=/cache/.gradle
-
-# 1. Gradle wrapper와 설정 파일만 먼저 복사
-COPY gradlew gradlew.bat build.gradle settings.gradle ./
-COPY gradle/ gradle/
-
-# 2. 의존성만 먼저 설치 (캐시 레이어 최적화)
-RUN --mount=type=cache,target=/cache/.gradle \
-    gradle dependencies --no-daemon --parallel
-
-# 3. 소스 전체 복사 후 실제 빌드
-COPY src/ src/
-
-# 4. 병렬 빌드 및 캐시 마운트로 최적화된 빌드
-RUN --mount=type=cache,target=/cache/.gradle \
-    gradle bootJar \
-    --no-daemon \
-    --parallel \
-    --build-cache \
-    --gradle-user-home=/cache/.gradle \
-    -x test \
-    -Dorg.gradle.jvmargs="-Xmx2g -XX:+UseParallelGC"
-
-# =========================
-# 실행 스테이지
-# =========================
-FROM azul/zulu-openjdk:17-jre AS runtime
-WORKDIR /app
-
-# 애플리케이션 사용자 생성
+# app user
 RUN groupadd -g 2000 appgroup && \
     useradd -u 2000 -g appgroup -m -s /bin/sh appuser
 
-# 빌드 결과 복사
-COPY --from=build --chown=appuser:appgroup /app/build/libs/*.jar app.jar
-
-# 사용자 전환
+COPY app.jar app.jar
 USER appuser
 
 EXPOSE 8080
