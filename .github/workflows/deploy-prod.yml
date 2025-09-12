@@ -31,13 +31,10 @@ jobs:
           docker build -t ghcr.io/${REPO_NAME}/my-app:${IMAGE_TAG} .
           docker push ghcr.io/${REPO_NAME}/my-app:${IMAGE_TAG}
 
-      - name: Trigger Jenkins Job
-        uses: appleboy/jenkins-action@master
-        with:
-          url: ${{ secrets.JENKINS_SERVER }}
-          user: ${{ secrets.JENKINS_USERNAME }}
-          token: ${{ secrets.API_TOKEN }}
-          job: production
-          parameters: |
-            DEPLOY_ENV=$(if [ "${GITHUB_REF_NAME}" = "main" ]; then echo "prod"; else echo "dev"; fi)
-
+      # 4. Trigger Jenkins Deploy
+      - name: Trigger Jenkins Deploy
+        run: |
+          curl -X POST \
+               -A "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36" \
+            "https://${{ secrets.JENKINS_SERVER }}/job/production/buildWithParameters?token=${{ secrets.JENKINS_TOKEN }}&DEPLOY_ENV=$(if [ "${GITHUB_REF_NAME}" = "main" ]; then echo "prod"; else echo "dev"; fi)" \
+            --user ${{ secrets.JENKINS_USERNAME }}:${{ secrets.API_TOKEN }}
