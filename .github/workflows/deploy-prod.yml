@@ -30,55 +30,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
 
-      # 4. 메타데이터 추출
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ github.repository }}/my-app
-          tags: |
-            type=ref,event=branch
-            type=raw,value=prod,enable={{is_default_branch}}
-            type=raw,value=dev,enable={{is_default_branch}}
-
-      # 5. Gradle 캐시 설정
-      - name: Cache Gradle packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      # 6. Gradle 캐시 설정
-      - name: Cache Gradle packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
 
       # 7. Docker 이미지 빌드 및 push (환경별 Dockerfile)
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ${{ github.ref_name == 'main' && 'Dockerfile.prod' || 'Dockerfile.dev' }}
-          platforms: ${{ github.ref_name == 'main' && 'linux/arm64' || 'linux/amd64' }}
-          push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ steps.repo.outputs.name }}/my-app:${{ github.ref_name == 'main' && 'prod' || 'dev' }}
-            ${{ env.REGISTRY }}/${{ steps.repo.outputs.name }}/my-app:${{ github.sha }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            BUILDKIT_INLINE_CACHE=1
+        run: |
+          REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_TAG=${{ github.ref_name == 'main' && 'prod' || 'dev' }}
+          docker buildx build \
+            --platform linux/arm64 \
+            -t ghcr.io/${REPO_NAME}/my-app:${IMAGE_TAG} \
+            -t ghcr.io/${REPO_NAME}/my-app:${{ github.sha }} \
+            --push \
+            .
+
 
       # 8. Trigger Jenkins Deploy
       - name: Trigger Jenkins Deploy
