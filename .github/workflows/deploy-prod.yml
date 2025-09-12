@@ -3,8 +3,8 @@ name: Build and Deploy Docker
 on:
   push:
     branches:
-      - main  # main 브랜치에 push 될 때만 실행
-      - dev   # dev 브랜치도 포함 가능
+      - main
+      - dev
 
 jobs:
   build-and-push:
@@ -15,7 +15,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. Docker 로그인 (GHCR)
+      # 2. Set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # 3. Docker 로그인 (GHCR)
       - name: Login to GHCR
         uses: docker/login-action@v2
         with:
@@ -23,18 +27,31 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
 
-      # 3. Docker 이미지 빌드
-      - name: Build Docker image
+      # 4. Docker 레이어 캐시 (선택 사항)
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      # 5. Docker 이미지 빌드 및 push
+      - name: Build and push Docker image
         run: |
           IMAGE_TAG=$(if [ "${GITHUB_REF_NAME}" = "main" ]; then echo "prod"; else echo "dev"; fi)
           REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          docker build -t ghcr.io/${REPO_NAME}/my-app:${IMAGE_TAG} .
-          docker push ghcr.io/${REPO_NAME}/my-app:${IMAGE_TAG}
+          docker buildx build \
+            --platform linux/arm64 \
+            --push \
+            -t ghcr.io/${REPO_NAME}/my-app:${IMAGE_TAG} \
+            .
 
-      # 4. Trigger Jenkins Deploy
+      # 6. Trigger Jenkins Deploy
       - name: Trigger Jenkins Deploy
         run: |
+          DEPLOY_ENV=$(if [ "${GITHUB_REF_NAME}" = "main" ]; then echo "prod"; else echo "dev"; fi)
           curl -X POST \
                -A "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36" \
-            "https://${{ secrets.JENKINS_SERVER }}/job/production/buildWithParameters?token=${{ secrets.JENKINS_TOKEN }}&DEPLOY_ENV=$(if [ "${GITHUB_REF_NAME}" = "main" ]; then echo "prod"; else echo "dev"; fi)" \
-            --user ${{ secrets.JENKINS_USERNAME }}:${{ secrets.API_TOKEN }}
+               "https://${{ secrets.JENKINS_SERVER }}/job/production/buildWithParameters?token=${{ secrets.JENKINS_TOKEN }}&DEPLOY_ENV=${DEPLOY_ENV}" \
+               --user ${{ secrets.JENKINS_USERNAME }}:${{ secrets.API_TOKEN }}
