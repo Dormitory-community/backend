@@ -52,7 +52,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # 6. Docker 이미지 빌드 및 push (환경별 Dockerfile)
+      # 6. Gradle 캐시 설정
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # 7. Docker 이미지 빌드 및 push (환경별 Dockerfile)
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -61,15 +72,15 @@ jobs:
           platforms: ${{ github.ref_name == 'main' && 'linux/arm64' || 'linux/amd64' }}
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ github.repository }}/my-app:${{ github.ref_name == 'main' && 'prod' || 'dev' }}
-            ${{ env.REGISTRY }}/${{ github.repository }}/my-app:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ steps.repo.outputs.name }}/my-app:${{ github.ref_name == 'main' && 'prod' || 'dev' }}
+            ${{ env.REGISTRY }}/${{ steps.repo.outputs.name }}/my-app:${{ github.sha }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
             BUILDKIT_INLINE_CACHE=1
 
-      # 7. Trigger Jenkins Deploy
+      # 8. Trigger Jenkins Deploy
       - name: Trigger Jenkins Deploy
         run: |
           DEPLOY_ENV=${{ github.ref_name == 'main' && 'prod' || 'dev' }}
