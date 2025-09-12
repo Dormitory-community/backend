@@ -1,11 +1,11 @@
-# 빌드 스테이지
-FROM gradle:8.5-jdk17 AS build
+# 빌드 스테이지 (멀티 아키텍처 지원)
+FROM --platform=$BUILDPLATFORM gradle:8.5-jdk17 AS build
 WORKDIR /app
 COPY . .
 RUN gradle build --no-daemon -x test
 
-# 실행 스테이지
-FROM eclipse-temurin:17-jre-alpine
+# 실행 스테이지 (멀티 아키텍처 지원)
+FROM --platform=$BUILDPLATFORM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
 # 타임존 설정
