@@ -1,19 +1,26 @@
+# 빌드 스테이지
+FROM gradle:8.5-jdk17 AS build
+WORKDIR /app
+COPY . .
+RUN gradle build --no-daemon -x test
+
 # 실행 스테이지
 FROM eclipse-temurin:17-jre
-
 WORKDIR /app
 
-# 타임존 설치 (Debian/Ubuntu용)
+# 타임존 설정
 RUN apt-get update && apt-get install -y tzdata && rm -rf /var/lib/apt/lists/*
-
 ENV TZ=Asia/Seoul
 
-# 사용자 추가
-RUN groupadd -r spring && useradd -r -g spring spring
+# 애플리케이션 실행을 위한 사용자 추가
+RUN addgroup --system spring && adduser --system --ingroup spring spring
 USER spring:spring
 
-# JAR 파일 복사
+# 빌드 스테이지에서 생성된 JAR 파일 복사
 COPY --from=build --chown=spring:spring /app/build/libs/*.jar app.jar
 
+# 컨테이너가 시작될 때 실행될 명령어
 ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# 컨테이너 포트 노출
 EXPOSE 8080
