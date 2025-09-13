@@ -1,0 +1,21 @@
+# AMD64 기반 Temurin JDK 17 JRE
+FROM eclipse-temurin:17-jre
+
+WORKDIR /app
+
+# app user 생성
+RUN groupadd -g 2000 appgroup && \
+    useradd -u 2000 -g appgroup -m -s /bin/sh appuser
+
+COPY app.jar app.jar
+USER appuser
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", \
+           "-XX:+UseContainerSupport", \
+           "-XX:MaxRAMPercentage=75.0", \
+           "-XX:+UseParallelGC", \
+           "-XX:+TieredCompilation", \
+           "-XX:TieredStopAtLevel=1", \
+           "-jar", "app.jar"]
