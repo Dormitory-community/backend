@@ -20,4 +20,15 @@ public class TestController {
     public ResponseEntity<?> test() {
         return ResponseEntity.ok().body("test");
     }
+
+    @Operation(
+            summary = "헬스 체크 테스트",
+            description = """
+                        헬스체크 api 입니다.
+                    """
+    )
+    @GetMapping("/health")
+    public ResponseEntity<?> heath() {
+        return ResponseEntity.ok().body("health");
+    }
 }
