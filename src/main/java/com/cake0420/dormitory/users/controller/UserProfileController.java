@@ -1,6 +1,7 @@
 package com.cake0420.dormitory.users.controller;
 
 import com.cake0420.dormitory.global.config.SupabaseProperties;
+import com.cake0420.dormitory.users.exception.UserDuplicateException;
 import com.cake0420.dormitory.users.service.SupabaseService;
 import com.cake0420.dormitory.users.service.UserProfileService;
 import com.cake0420.dormitory.users.utils.WebhookUtils;
@@ -43,6 +44,8 @@ public class UserProfileController {
         try {
             userProfileService.registerUserProfile(payload);
             return ResponseEntity.ok().body("유저 정보가 등록되었습니다.");
+        } catch (UserDuplicateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("이미 회원가입된 이메일입니다.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 내부 오류 발생");
         }

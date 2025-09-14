@@ -3,6 +3,7 @@ package com.cake0420.dormitory.users.service.impl;
 import com.cake0420.dormitory.users.domain.UserProfiles;
 import com.cake0420.dormitory.users.domain.dto.SupabaseUserDTO;
 import com.cake0420.dormitory.users.domain.enums.Role;
+import com.cake0420.dormitory.users.exception.UserDuplicateException;
 import com.cake0420.dormitory.users.repository.UserProfileRepository;
 import com.cake0420.dormitory.users.service.UserProfileService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,17 +29,20 @@ public class UserProfileServiceImpl implements UserProfileService {
             SupabaseUserDTO dto = validatePayload(json);
             if (dto == null) return;
 
-            boolean exists = userProfileRepository.findBySupabaseId(dto.id()).isPresent();
-            if (exists) return;
+            boolean exists = userProfileRepository.findByEmail(dto.email()).isPresent();
+            if (exists) {
+                throw new UserDuplicateException("이미 존재하는 유저입니다.");
+            };
 
             UserProfiles profile = UserProfiles.builder()
                     .name(dto.name())
+                    .email(dto.email())
                     .userProfileUrl("")
                     .role(Role.ROLE_USER)
                     .supabaseId(dto.id())
                     .build();
             userProfileRepository.save(profile);
-        } catch (IllegalStateException e) {
+        } catch (UserDuplicateException e) {
             throw e;
         } catch (JsonProcessingException e) {
             log.error("JsonParseException : {}", e.getMessage());
@@ -59,9 +63,10 @@ public class UserProfileServiceImpl implements UserProfileService {
 
         String supabaseId = userNode.get("id").asText();
         String name = userNode.get("user_metadata").get("full_name").asText();
-        if (supabaseId == null || supabaseId.isBlank() || name == null || name.isBlank()) return null;
+        String email = userNode.get("email").asText();
+        if (supabaseId == null || supabaseId.isBlank() || name == null || name.isBlank() || email == null || email.isBlank()) return null;
 
 
-        return new SupabaseUserDTO(supabaseId, name);
+        return new SupabaseUserDTO(supabaseId, name, email);
     }
 }

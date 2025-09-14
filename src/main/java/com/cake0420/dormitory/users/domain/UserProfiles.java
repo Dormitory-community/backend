@@ -8,8 +8,12 @@ import lombok.*;
 @Entity
 @Builder
 @Getter
-@Table(name = "user_profiles",
-        uniqueConstraints = @UniqueConstraint(name = "uk_user_profile_supabase_id", columnNames = "supabase_id")
+@Table(
+        name = "user_profiles",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_user_profile_supabase_id", columnNames = "supabase_id"),
+                @UniqueConstraint(name = "uk_user_profile_email", columnNames = "email")
+        }
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
@@ -19,6 +23,9 @@ public class UserProfiles extends BaseEntity {
     @Column(length = 36)
     private String id;
 
+    @Column(nullable = false, unique = true)
+    private String email;
+
     @Column(length = 10, nullable = false)
     @Enumerated(EnumType.STRING)
     private Role role;
@@ -26,7 +33,7 @@ public class UserProfiles extends BaseEntity {
     @Column(length = 10, nullable = false)
     private String name;
 
-    @Column(name = "supabase_id", length = 36, nullable = false)
+    @Column(name = "supabase_id", length = 36, nullable = false, unique = true)
     private String supabaseId;
 
     @Column(name = "user_profile_url", length = 255, nullable = false)
