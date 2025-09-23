@@ -56,22 +56,4 @@ public class WebhookUtils {
             return false;
         }
     }
-
-    // 디버깅용 헬퍼 메서드 (운영 환경에서는 제거)
-    public static String computeExpectedSignature(String payload, String secretKey) {
-        try {
-            byte[] payloadBytes = payload.getBytes(StandardCharsets.UTF_8);
-            byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
-
-            Mac hmac = Mac.getInstance(HMAC_SHA256);
-            hmac.init(new SecretKeySpec(keyBytes, HMAC_SHA256));
-            byte[] signature = hmac.doFinal(payloadBytes);
-
-            String base64Sig = Base64.getEncoder().encodeToString(signature);
-            return "v1," + base64Sig;
-        } catch (Exception e) {
-            log.error("Error computing expected signature", e);
-            return null;
-        }
-    }
 }
