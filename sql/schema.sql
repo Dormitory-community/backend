@@ -17,15 +17,6 @@ CREATE TABLE post_categories (
                                  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE post_tags (
-                           id VARCHAR(36) PRIMARY KEY,
-                           post_id VARCHAR(36) NOT NULL ,
-                           tag VARCHAR(10) NOT NULL ,
-                           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                           CONSTRAINT fk_post_tags_post_id FOREIGN KEY (post_id) REFERENCES posts(id)
-);
-
 CREATE TABLE posts (
                        id VARCHAR(36) PRIMARY KEY ,
                        user_id VARCHAR(36) NOT NULL ,
@@ -41,6 +32,23 @@ CREATE TABLE posts (
                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                        CONSTRAINT fk_posts_caterory_id FOREIGN KEY (category_id) REFERENCES post_categories(id) ,
                        CONSTRAINT fk_posts_user_id FOREIGN KEY (user_id) REFERENCES user_profiles(id)
+);
+
+CREATE TABLE tags (
+                      id VARCHAR(36) PRIMARY KEY,
+                      tags VARCHAR(10) NOT NULL ,
+                      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
+
+CREATE TABLE post_tag_map (
+                              id VARCHAR(36) PRIMARY KEY,
+                              post_id VARCHAR(36) NOT NULL ,
+                              tag_id VARCHAR(36) NOT NULL ,
+                              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                              updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                              CONSTRAINT fk_post_tag_map_post_id FOREIGN KEY (post_id) REFERENCES posts(id),
+                              CONSTRAINT fk_post_tag_map_tag_id FOREIGN KEY (tag_id) REFERENCES tags(id)
 );
 
 CREATE TABLE comments (
